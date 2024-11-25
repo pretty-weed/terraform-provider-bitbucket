@@ -149,6 +149,8 @@ func resourceDeploymentVariableRead(ctx context.Context, d *schema.ResourceData,
 		d.Set("value", d.Get("value").(string))
 	}
 
+	log.Printf("[DEBUG] Read deployment var %v", d)
+
 	return nil
 }
 
