@@ -26,6 +26,7 @@ func resourceDeploymentVariable() *schema.Resource {
 					return nil, fmt.Errorf("unexpected format of ID (%q), expected DEPLOYMENT-ID/DEPLOYMENT-VARIABLE-ID", d.Id())
 				}
 				d.SetId(idParts[2])
+				log.Printf("[DEBUG] setting id to %v", idParts[2])
 				d.Set("deployment", strings.Join([]string{idParts[0], idParts[1]}, "/"))
 				return []*schema.ResourceData{d}, nil
 			},
