@@ -102,6 +102,7 @@ func resourceDeploymentVariableRead(ctx context.Context, d *schema.ResourceData,
 	repository, deployment := parseDeploymentId(d.Get("deployment").(string))
 	workspace, repoSlug, err := deployVarId(repository)
 	if err != nil {
+		log.Printf("Err getting var id %v", err)
 		return diag.FromErr(err)
 	}
 
@@ -148,6 +149,7 @@ func resourceDeploymentVariableRead(ctx context.Context, d *schema.ResourceData,
 		d.Set("value", d.Get("value").(string))
 	}
 
+	log.Printf("[DEBUG] Deployment Variable (%v) found", d)
 	return nil
 }
 
