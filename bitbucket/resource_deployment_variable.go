@@ -69,6 +69,9 @@ func newDeploymentVariableFromResource(d *schema.ResourceData) *bitbucket.Deploy
 
 func parseDeploymentId(str string) (repository string, deployment string) {
 	parts := strings.SplitN(str, ":", 2)
+	if len(parts) < 2 {
+		log.Panicf("No colon in deployment ID! (%s)", str)
+	}
 	return parts[0], parts[1]
 }
 
@@ -195,6 +198,6 @@ func deployVarId(repo string) (string, string, error) {
 	if len(idparts) == 2 {
 		return idparts[0], idparts[1], nil
 	} else {
-		return "", "", fmt.Errorf("incorrect ID format, should match `owner/key`")
+		return "", "", fmt.Errorf("incorrect ID format, should match `owner/key`, got %s", repo)
 	}
 }
