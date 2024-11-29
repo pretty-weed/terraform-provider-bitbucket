@@ -68,6 +68,7 @@ func newDeploymentVariableFromResource(d *schema.ResourceData) *bitbucket.Deploy
 }
 
 func parseDeploymentId(str string) (repository string, deployment string) {
+	fmt.Printf("[WARN] parseDeploymentId %s", str)
 	parts := strings.SplitN(str, ":", 2)
 	if len(parts) < 2 {
 		log.Panicf("No colon in deployment ID! (%s)", str)
@@ -101,18 +102,18 @@ func resourceDeploymentVariableCreate(ctx context.Context, d *schema.ResourceDat
 func resourceDeploymentVariableRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(Clients).genClient
 	pipeApi := c.ApiClient.PipelinesApi
-
+	log.Printf("[WARN] VarRead %s", d)
 	repository, deployment := parseDeploymentId(d.Get("deployment").(string))
 	workspace, repoSlug, err := deployVarId(repository)
 	if err != nil {
 		log.Printf("Err getting var id %v", err)
 		return diag.FromErr(err)
 	}
-
+	log.Printf("[DEBUG] pipeApi.GetDeploymentVariables(%v, %v, %v, %v)", c.AuthContext, workspace, repoSlug, deployment)
 	rvRes, res, err := pipeApi.GetDeploymentVariables(c.AuthContext, workspace, repoSlug, deployment)
 
 	if res.StatusCode == http.StatusNotFound {
-		log.Printf("[WARN] Deployment Variable (%s) not found, removing from state", d.Id())
+		log.Printf("[WARN] Deployment Variable (%s) not found as we could not locate a deployment %s, removing from state", d.Id(), deployment)
 		d.SetId("")
 		return nil
 	}
@@ -122,7 +123,7 @@ func resourceDeploymentVariableRead(ctx context.Context, d *schema.ResourceData,
 	}
 
 	if rvRes.Size < 1 {
-		log.Printf("[WARN] Deployment Variable (%s) not found, removing from state", d.Id())
+		log.Printf("[WARN] Deployment Variable (%s) not found, as number of deployment variables is zero, removing from state", d.Id())
 		d.SetId("")
 		return nil
 	}
@@ -130,6 +131,7 @@ func resourceDeploymentVariableRead(ctx context.Context, d *schema.ResourceData,
 	var deployVar *bitbucket.DeploymentVariable
 
 	for _, rv := range rvRes.Values {
+		log.Printf("[DEBUG] Checking Deployment (%s) variable (%s)", deployment, d.Id())
 		if rv.Uuid == d.Id() {
 			deployVar = &rv
 			break
